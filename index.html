@@ -141,9 +141,16 @@
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
+            gap: 2rem;
         }
 
-        .logo { font-size: 1.5rem; font-weight: bold; color: white; text-decoration: none; }
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            color: white; 
+            text-decoration: none; 
+            flex-shrink: 0;
+        }
         .nav-menu { display: flex; gap: 1rem; list-style: none; align-items: center;}
         .nav-item { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s ease; }
         .nav-item:hover { background: var(--white-20); transform: translateY(-2px); }
@@ -160,7 +167,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Task List, Schedule, Pomodoro, etc. (No changes needed) --- */
+        /* --- Task List, Schedule, Pomodoro, etc. --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
         .stat-number { font-size: 3rem; font-weight: bold; color: white; margin-bottom: 0.5rem; }
         .stat-label { color: var(--white-90); font-size: 1.1rem; }
@@ -214,6 +221,22 @@
         .timer-display { font-size: 5rem; font-weight: bold; margin-bottom: 2rem; text-shadow: 0 4px 20px var(--black-30); }
         .timer-controls { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .timer-mode-controls { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .pomodoro-settings-btn {
+            margin-top: 2rem;
+            background: var(--white-20);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .pomodoro-settings-btn:hover {
+            background: var(--white-30);
+            transform: rotate(45deg);
+        }
         .modal {
             display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -284,8 +307,21 @@
             flex-shrink: 0;
         }
 
+        /* --- Live Clock --- */
+        .live-clock {
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.2);
+            flex-grow: 1;
+            text-align: center;
+        }
+
         /* --- Responsive Design --- */
         @media (max-width: 992px) {
+            .live-clock {
+                display: none;
+            }
             .nav-menu {
                 position: fixed; top: 0; right: -100%;
                 width: 250px; height: 100vh;
@@ -336,6 +372,7 @@
         <nav class="nav">
             <div class="nav-container">
                 <a href="#" class="logo" data-page="dashboard">📚 StudyFlow</a>
+                <div id="live-clock" class="live-clock"></div>
                 <div class="nav-menu" id="nav-menu">
                     <a href="#" class="nav-item active" data-page="dashboard">Ana Sayfa</a>
                     <a href="#" class="nav-item" data-page="schedule">Ders Programı</a>
@@ -372,10 +409,48 @@
                     <div class="task-list" id="dashboard-task-list"></div>
                 </div>
             </div>
-            <!-- Other pages (Schedule, Tasks, Pomodoro) -->
-            <div id="schedule" class="page-section"><div class="hero"><h1>Ders Programı 📅</h1><p>Haftalık ders planını yönet</p><button class="btn btn-primary" id="open-addClass-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Ders Ekle</button></div><div class="schedule-grid" id="schedule-grid-container"></div></div>
-            <div id="tasks" class="page-section"><div class="hero"><h1>Görev Yönetimi ✅</h1><p>Ödevlerini organize et ve takip et</p><button class="btn btn-success" id="open-addTask-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Görev Ekle</button></div><div class="card"><h3>Tüm Görevler</h3><div class="task-list" id="all-tasks-list"></div></div></div>
-            <div id="pomodoro" class="page-section"><div class="hero"><h1>Pomodoro Zamanlayıcı ⏳</h1><p>Odaklan, mola ver ve verimliliğini artır</p></div><div class="pomodoro-timer"><div class="timer-display" id="pomodoro-display">25:00</div><div class="timer-mode-controls"><button class="btn" id="mode-pomodoro">Pomodoro</button><button class="btn btn-success" id="mode-short">Kısa Mola</button><button class="btn btn-danger" id="mode-long">Uzun Mola</button></div><div class="timer-controls" style="margin-top: 2rem;"><button class="btn btn-primary" id="pomodoro-start" style="width: auto;"><i class="fas fa-play"></i> Başlat</button><button class="btn btn-danger" id="pomodoro-pause" style="width: auto;"><i class="fas fa-pause"></i> Duraklat</button><button class="btn" id="pomodoro-reset" style="width: auto;"><i class="fas fa-sync"></i> Sıfırla</button></div></div></div>
+
+            <!-- Schedule Page -->
+            <div id="schedule" class="page-section">
+                <div class="hero">
+                    <h1>Ders Programı 📅</h1>
+                    <p>Haftalık ders planını yönet</p>
+                    <button class="btn btn-primary" id="open-addClass-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Ders Ekle</button>
+                </div>
+                <div class="schedule-grid" id="schedule-grid-container"></div>
+            </div>
+            
+            <!-- Tasks Page -->
+            <div id="tasks" class="page-section">
+                <div class="hero">
+                    <h1>Görev Yönetimi ✅</h1>
+                    <p>Ödevlerini organize et ve takip et</p>
+                    <button class="btn btn-success" id="open-addTask-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Görev Ekle</button>
+                </div>
+                <div class="card">
+                    <h3>Tüm Görevler</h3>
+                    <div class="task-list" id="all-tasks-list"></div>
+                </div>
+            </div>
+
+            <!-- Pomodoro Page -->
+            <div id="pomodoro" class="page-section">
+                <div class="hero"><h1>Pomodoro Zamanlayıcı ⏳</h1><p>Odaklan, mola ver ve verimliliğini artır</p></div>
+                <div class="pomodoro-timer">
+                    <div class="timer-display" id="pomodoro-display">25:00</div>
+                    <div class="timer-mode-controls">
+                        <button class="btn" id="mode-pomodoro">Pomodoro</button>
+                        <button class="btn btn-success" id="mode-short">Kısa Mola</button>
+                        <button class="btn btn-danger" id="mode-long">Uzun Mola</button>
+                    </div>
+                    <div class="timer-controls" style="margin-top: 2rem;">
+                        <button class="btn btn-primary" id="pomodoro-start" style="width: auto;"><i class="fas fa-play"></i> Başlat</button>
+                        <button class="btn btn-danger" id="pomodoro-pause" style="width: auto;"><i class="fas fa-pause"></i> Duraklat</button>
+                        <button class="btn" id="pomodoro-reset" style="width: auto;"><i class="fas fa-sync"></i> Sıfırla</button>
+                    </div>
+                    <button id="pomodoro-settings-btn" class="pomodoro-settings-btn" title="Ayarlar"><i class="fas fa-cog"></i></button>
+                </div>
+            </div>
         
             <!-- Email Page -->
             <div id="email" class="page-section">
@@ -405,9 +480,32 @@
         </div>
     </main>
 
-    <!-- Modals (Add Task, Add Class) -->
+    <!-- Modals -->
     <div id="addTaskModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Görev Ekle</h3><form id="addTaskForm"><div class="form-group"><label for="taskTitle">Görev Başlığı</label><input type="text" id="taskTitle" required placeholder="Örn: Matematik Ödevi"></div><div class="form-group"><label for="taskMeta">Detay (Opsiyonel)</label><input type="text" id="taskMeta" placeholder="Örn: Sayfa 42'deki problemler"></div><div class="form-group"><label for="taskTime">Bitiş Saati</label><input type="time" id="taskTime" required></div><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Görevi Kaydet</button></form></div></div>
     <div id="addClassModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Ders Ekle</h3><form id="addClassForm"><div class="form-group"><label for="className">Ders Adı</label><input type="text" id="className" required placeholder="Örn: Fizik"></div><div class="form-group"><label for="classDay">Gün</label><select id="classDay"><option>Pazartesi</option><option>Salı</option><option>Çarşamba</option><option>Perşembe</option><option>Cuma</option><option>Cumartesi</option><option>Pazar</option></select></div><div class="form-group" style="display: flex; gap: 1rem;"><div style="flex: 1;"><label for="classTimeStart">Başlangıç</label><input type="time" id="classTimeStart" required></div><div style="flex: 1;"><label for="classTimeEnd">Bitiş</label><input type="time" id="classTimeEnd" required></div></div><div class="form-group"><label for="classTeacher">Öğretmen / Yer (Opsiyonel)</label><input type="text" id="classTeacher" placeholder="Örn: Prof. Ahmet - A101"></div><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Dersi Kaydet</button></form></div></div>
+    
+    <!-- Pomodoro Settings Modal -->
+    <div id="pomodoroSettingsModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3>Pomodoro Ayarları</h3>
+            <form id="pomodoroSettingsForm">
+                <div class="form-group">
+                    <label for="settingPomodoro">Pomodoro Süresi (dakika)</label>
+                    <input type="number" id="settingPomodoro" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="settingShortBreak">Kısa Mola Süresi (dakika)</label>
+                    <input type="number" id="settingShortBreak" min="1" max="30" required>
+                </div>
+                <div class="form-group">
+                    <label for="settingLongBreak">Uzun Mola Süresi (dakika)</label>
+                    <input type="number" id="settingLongBreak" min="1" max="60" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-save"></i> Ayarları Kaydet</button>
+            </form>
+        </div>
+    </div>
     
     <!-- Notification Toast -->
     <div id="notification-toast" class="notification-toast"></div>
@@ -418,16 +516,26 @@
         let tasks = [];
         let classes = [];
         let currentUser = null;
+        let clockInterval = null;
+        let pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
         
         const loadUserData = (username) => {
             tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || [];
             classes = JSON.parse(localStorage.getItem(`classes_${username}`)) || [];
+            const savedSettings = localStorage.getItem(`pomodoroSettings_${username}`);
+            if (savedSettings) {
+                pomodoroSettings = JSON.parse(savedSettings);
+            } else {
+                // Reset to default if no settings are saved for the user
+                pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
+            }
         };
         
         const saveData = () => {
             if (!currentUser) return;
             localStorage.setItem(`tasks_${currentUser}`, JSON.stringify(tasks));
             localStorage.setItem(`classes_${currentUser}`, JSON.stringify(classes));
+            localStorage.setItem(`pomodoroSettings_${currentUser}`, JSON.stringify(pomodoroSettings));
         };
 
         // --- DOM ELEMENT SELECTORS ---
@@ -453,6 +561,11 @@
             appContainer.style.display = 'block';
             const userDisplay = username.split('@')[0];
             document.getElementById('welcome-message').textContent = `Hoş Geldin, ${userDisplay}! 🌟`;
+            
+            if (clockInterval) clearInterval(clockInterval);
+            updateClock(); // Initial call
+            clockInterval = setInterval(updateClock, 1000);
+
             initializeAppData();
         };
         
@@ -471,6 +584,7 @@
             currentUser = null;
             tasks = [];
             classes = [];
+            if (clockInterval) clearInterval(clockInterval);
             showLoginPage();
         });
 
@@ -507,6 +621,13 @@
             btn.addEventListener('click', () => showModal(modalId));
         });
 
+        document.getElementById('pomodoro-settings-btn').addEventListener('click', () => {
+            document.getElementById('settingPomodoro').value = pomodoroSettings.pomodoro;
+            document.getElementById('settingShortBreak').value = pomodoroSettings.short;
+            document.getElementById('settingLongBreak').value = pomodoroSettings.long;
+            showModal('pomodoroSettingsModal');
+        });
+
         modals.forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal || e.target.closest('.modal-close-btn')) {
@@ -514,8 +635,19 @@
                 }
             });
         });
+        
+        // --- POMODORO SETTINGS FORM ---
+        document.getElementById('pomodoroSettingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            pomodoroSettings.pomodoro = parseInt(document.getElementById('settingPomodoro').value, 10);
+            pomodoroSettings.short = parseInt(document.getElementById('settingShortBreak').value, 10);
+            pomodoroSettings.long = parseInt(document.getElementById('settingLongBreak').value, 10);
+            saveData();
+            resetTimer(); // Apply new settings immediately
+            closeModal();
+        });
 
-        // --- TASK & SCHEDULE RENDERING LOGIC (same as before) ---
+        // --- TASK & SCHEDULE RENDERING LOGIC ---
         const allTasksList = document.getElementById('all-tasks-list');
         const dashboardTaskList = document.getElementById('dashboard-task-list');
 
@@ -603,17 +735,40 @@
             document.getElementById('progress-text').textContent = totalTasks > 0 ? `${progress}% tamamlandı - Harika gidiyorsun! 🚀` : `Başlamak için bir görev ekle!`;
         };
         
-        // --- POMODORO TIMER (no changes) ---
+        // --- POMODORO TIMER ---
         const pomodoroDisplay = document.getElementById('pomodoro-display');
         let timer, isRunning = false, timeLeft;
-        const modes = { pomodoro: 25 * 60, short: 5 * 60, long: 15 * 60 };
         let currentMode = 'pomodoro';
         const alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-        const updateDisplay = () => { let m = Math.floor(timeLeft / 60), s = timeLeft % 60; pomodoroDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; document.title = `${pomodoroDisplay.textContent} - StudyFlow`; };
-        const startTimer = () => { if (isRunning) return; isRunning = true; timer = setInterval(() => { timeLeft--; updateDisplay(); if (timeLeft <= 0) { clearInterval(timer); isRunning = false; alarmSound.play(); alert("Süre doldu!"); resetTimer(); } }, 1000); };
+        
+        const updateDisplay = () => { 
+            let m = Math.floor(timeLeft / 60), s = timeLeft % 60; 
+            pomodoroDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; 
+            document.title = `${pomodoroDisplay.textContent} - StudyFlow`; 
+        };
+        const startTimer = () => { 
+            if (isRunning) return; 
+            isRunning = true; 
+            timer = setInterval(() => { 
+                timeLeft--; 
+                updateDisplay(); 
+                if (timeLeft <= 0) { 
+                    clearInterval(timer); 
+                    isRunning = false; 
+                    alarmSound.play(); 
+                    alert("Süre doldu!"); 
+                    resetTimer(); 
+                } 
+            }, 1000); 
+        };
         const pauseTimer = () => { clearInterval(timer); isRunning = false; };
-        const resetTimer = () => { pauseTimer(); timeLeft = modes[currentMode]; updateDisplay(); };
+        const resetTimer = () => { 
+            pauseTimer(); 
+            timeLeft = (pomodoroSettings[currentMode] || 25) * 60; 
+            updateDisplay(); 
+        };
         const setMode = (mode) => { currentMode = mode; resetTimer(); };
+
         document.getElementById('pomodoro-start').addEventListener('click', startTimer);
         document.getElementById('pomodoro-pause').addEventListener('click', pauseTimer);
         document.getElementById('pomodoro-reset').addEventListener('click', resetTimer);
@@ -627,10 +782,7 @@
             const recipient = document.getElementById('emailRecipient').value;
             const subject = document.getElementById('emailSubject').value;
             const body = document.getElementById('emailBody').value;
-
-            // Create mailto link and trigger default email client
             const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            
             window.location.href = mailtoLink;
         });
 
@@ -701,11 +853,33 @@
             }, 15000);
         };
 
+        // --- LIVE CLOCK ---
+        const clockElement = document.getElementById('live-clock');
+        function updateClock() {
+            if (!clockElement) return;
+            const now = new Date();
+            const days = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+            const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+            const dayName = days[now.getDay()];
+            const day = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            clockElement.innerHTML = `
+                <span>${hours}:${minutes}:${seconds}</span>
+                <span style="opacity: 0.8; margin-left: 10px;">${day} ${monthName} ${year}, ${dayName}</span>
+            `;
+        }
+
         // --- APP INITIALIZATION ---
         const initializeAppData = () => {
             renderTasks();
             renderClasses();
-            setMode('pomodoro');
+            setMode('pomodoro'); // Initialize Pomodoro with default mode but user settings
             showPage('dashboard');
             setTimeout(checkUpcomingEvents, 2000); // Check after a short delay
         };
