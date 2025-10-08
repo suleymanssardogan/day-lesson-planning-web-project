@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow - Modern Ders Programı</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color-1: #00d4ff;
+            --accent-color-2: #00ff88;
+            --danger-color: #ff6b6b;
+            --white-10: rgba(255, 255, 255, 0.1);
+            --white-15: rgba(255, 255, 255, 0.15);
+            --white-20: rgba(255, 255, 255, 0.2);
+            --white-30: rgba(255, 255, 255, 0.3);
+            --white-80: rgba(255, 255, 255, 0.8);
+            --white-90: rgba(255, 255, 255, 0.9);
+            --black-20: rgba(0, 0, 0, 0.2);
+            --black-30: rgba(0, 0, 0, 0.3);
+            --black-50: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* --- Login Page --- */
+        #login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        #app-container {
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Utilities & Global Styles --- */
+        .card, .stat-card, .feature-card, .login-card {
+            background: var(--white-15);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 20px;
+            border: 1px solid var(--white-20);
+            padding: 2.5rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover, .stat-card:hover, .feature-card:hover, .login-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--black-20);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            width: 100%; /* For login form */
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary { background: linear-gradient(135deg, #00d4ff, #0099cc); }
+        .btn-success { background: linear-gradient(135deg, #00ff88, #00cc6a); }
+        .btn-danger { background: linear-gradient(135deg, #ff6b6b, #cc5555); }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 8rem 2rem 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 { font-size: 3.5rem; font-weight: 800; text-shadow: 0 4px 20px var(--black-30); }
+        h2 { color: white; margin-bottom: 2rem; text-align: center; font-size: 2rem; }
+        h3 { color: white; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600;}
+
+        /* --- Navigation --- */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: var(--white-10);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--white-20);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; color: white; text-decoration: none; }
+        .nav-menu { display: flex; gap: 1rem; list-style: none; align-items: center;}
+        .nav-item { color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 20px; transition: all 0.3s ease; }
+        .nav-item:hover { background: var(--white-20); transform: translateY(-2px); }
+        .nav-item.active { background: var(--white-30); font-weight: bold; }
+        #logout-btn { background: var(--danger-color); font-size: 0.9rem; padding: 0.5rem 1.2rem; }
+        .nav-toggle { display: none; background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; z-index: 1100; }
+
+        /* --- Hero Section --- */
+        .hero { text-align: center; margin-bottom: 4rem; animation: fadeInUp 1s ease; }
+        .hero p { font-size: 1.3rem; color: var(--white-90); margin: 1rem 0 2rem; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Task List, Schedule, Pomodoro, etc. (No changes needed) --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .stat-number { font-size: 3rem; font-weight: bold; color: white; margin-bottom: 0.5rem; }
+        .stat-label { color: var(--white-90); font-size: 1.1rem; }
+        .task-list { display: flex; flex-direction: column; gap: 1rem; }
+        .task-item {
+            background: var(--white-10);
+            border-radius: 15px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--accent-color-1);
+        }
+        .task-item.completed { border-left-color: var(--accent-color-2); }
+        .task-item:hover { transform: translateX(10px); background: var(--white-20); }
+        .task-checkbox {
+            width: 26px; height: 26px;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .task-checkbox.completed { background: var(--accent-color-2); border-color: var(--accent-color-2); color: #333; }
+        .task-content { flex: 1; }
+        .task-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.25rem; }
+        .task-item.completed .task-title { text-decoration: line-through; opacity: 0.7; }
+        .task-meta { color: var(--white-80); font-size: 0.9rem; }
+        .task-time {
+            background: var(--white-20);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .task-actions { display: flex; gap: 0.5rem; }
+        .task-delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
+        .task-delete-btn:hover { transform: scale(1.2); }
+        .progress-bar { width: 100%; height: 20px; background: var(--white-20); border-radius: 10px; overflow: hidden; margin: 1rem 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); border-radius: 10px; transition: width 0.5s ease; }
+        .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .day-column { background: var(--white-10); border-radius: 15px; padding: 1rem; min-height: 300px; display: flex; flex-direction: column; gap: 0.75rem;}
+        .day-header { color: white; font-weight: bold; text-align: center; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--white-20); border-radius: 10px; }
+        .class-item { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); padding: 1rem; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease; cursor: pointer; position: relative; }
+        .class-item:hover { transform: scale(1.05); box-shadow: 0 5px 15px var(--black-30); }
+        .class-delete-btn { position: absolute; top: 5px; right: 8px; background: none; border: none; color: white; opacity: 0.6; cursor: pointer; }
+        .class-delete-btn:hover { opacity: 1; }
+        .pomodoro-timer { text-align: center; background: var(--white-10); border-radius: 30px; padding: 3rem; margin: 2rem 0; }
+        .timer-display { font-size: 5rem; font-weight: bold; margin-bottom: 2rem; text-shadow: 0 4px 20px var(--black-30); }
+        .timer-controls { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .timer-mode-controls { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--black-50);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 2000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333; border-radius: 20px; padding: 2.5rem;
+            max-width: 500px; width: 90%;
+            animation: modalSlideIn 0.4s ease-out;
+            position: relative;
+        }
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .modal-close-btn {
+            position: absolute; top: 15px; right: 20px;
+            background: none; border: none;
+            font-size: 1.8rem; color: #888; cursor: pointer;
+        }
+        .form-group { margin-bottom: 1.25rem; text-align: left;}
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.8rem; border: 1px solid #ddd;
+            border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;
+            background-color: #f9f9f9; color: #333;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeInUp 0.6s ease; }
+
+        /* --- Notification Toast --- */
+        .notification-toast {
+            position: fixed;
+            bottom: -100%; /* Initially hidden */
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
+            color: #333;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 3000;
+            transition: bottom 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 90%;
+        }
+        .notification-toast.show {
+            bottom: 20px; /* Slide in */
+        }
+        .notification-toast button {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 992px) {
+            .nav-menu {
+                position: fixed; top: 0; right: -100%;
+                width: 250px; height: 100vh;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding-top: 5rem;
+                gap: 0;
+                align-items: flex-start;
+                transition: right 0.4s ease-in-out;
+            }
+            .nav-menu.active { right: 0; }
+            .nav-item { display: block; padding: 1.5rem 2rem; border-radius: 0; width: 100%; text-align: left;}
+            .nav-toggle { display: block; }
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            .timer-display { font-size: 3.5rem; }
+            .container { padding: 6rem 1rem 2rem; }
+            .schedule-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Login Page -->
+    <div id="login-page" class="page-section active">
+        <div class="login-card">
+            <h1 class="logo" style="font-size: 2.5rem; margin-bottom: 1rem; justify-content: center; display: flex;">📚 StudyFlow</h1>
+            <p style="color: var(--white-90); margin-bottom: 2rem;">Devam etmek için giriş yapın</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="emailLogin" required placeholder="E-posta Adresi">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Şifre (isteğe bağlı)">
+                </div>
+                <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Container -->
+    <main id="app-container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-container">
+                <a href="#" class="logo" data-page="dashboard">📚 StudyFlow</a>
+                <div class="nav-menu" id="nav-menu">
+                    <a href="#" class="nav-item active" data-page="dashboard">Ana Sayfa</a>
+                    <a href="#" class="nav-item" data-page="schedule">Ders Programı</a>
+                    <a href="#" class="nav-item" data-page="tasks">Görevler</a>
+                    <a href="#" class="nav-item" data-page="pomodoro">Pomodoro</a>
+                    <a href="#" class="nav-item" data-page="email"><i class="fas fa-envelope"></i> E-posta Gönder</a>
+                    <a href="#" id="logout-btn" class="nav-item">Çıkış Yap <i class="fas fa-sign-out-alt"></i></a>
+                </div>
+                <button class="nav-toggle" id="nav-toggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </nav>
+
+        <!-- Container for all pages -->
+        <div class="container">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page-section">
+                <div class="hero">
+                    <h1 id="welcome-message">Hoş Geldin! 🌟</h1>
+                    <p>Hedeflerine ulaşmanın en akıllı yolu</p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-number" id="stats-total-tasks">0</div><div class="stat-label">Toplam Görev</div></div>
+                    <div class="stat-card"><div class="stat-number" id="stats-completed-tasks">0</div><div class="stat-label">Tamamlanan</div></div>
+                    <div class="stat-card"><div class="stat-number" id="stats-pending-tasks">0</div><div class="stat-label">Bekleyen Görev</div></div>
+                    <div class="stat-card"><div class="stat-number" id="stats-total-classes">0</div><div class="stat-label">Toplam Ders</div></div>
+                </div>
+                <div class="card">
+                    <h3>Haftalık İlerleme</h3>
+                    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%;"></div></div>
+                    <p style="text-align: center;" id="progress-text">Başlamak için bir görev tamamla! 🚀</p>
+                </div>
+                <div class="card">
+                    <h3>Bugünkü Görevler <button class="btn btn-success" id="dashboard-add-task-btn" style="float: right; padding: 0.5rem 1rem; font-size: 0.9rem; width: auto;"><i class="fas fa-plus"></i> Ekle</button></h3>
+                    <div class="task-list" id="dashboard-task-list"></div>
+                </div>
+            </div>
+            <!-- Other pages (Schedule, Tasks, Pomodoro) -->
+            <div id="schedule" class="page-section"><div class="hero"><h1>Ders Programı 📅</h1><p>Haftalık ders planını yönet</p><button class="btn btn-primary" id="open-addClass-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Ders Ekle</button></div><div class="schedule-grid" id="schedule-grid-container"></div></div>
+            <div id="tasks" class="page-section"><div class="hero"><h1>Görev Yönetimi ✅</h1><p>Ödevlerini organize et ve takip et</p><button class="btn btn-success" id="open-addTask-modal-btn" style="width: auto;"><i class="fas fa-plus"></i> Yeni Görev Ekle</button></div><div class="card"><h3>Tüm Görevler</h3><div class="task-list" id="all-tasks-list"></div></div></div>
+            <div id="pomodoro" class="page-section"><div class="hero"><h1>Pomodoro Zamanlayıcı ⏳</h1><p>Odaklan, mola ver ve verimliliğini artır</p></div><div class="pomodoro-timer"><div class="timer-display" id="pomodoro-display">25:00</div><div class="timer-mode-controls"><button class="btn" id="mode-pomodoro">Pomodoro</button><button class="btn btn-success" id="mode-short">Kısa Mola</button><button class="btn btn-danger" id="mode-long">Uzun Mola</button></div><div class="timer-controls" style="margin-top: 2rem;"><button class="btn btn-primary" id="pomodoro-start" style="width: auto;"><i class="fas fa-play"></i> Başlat</button><button class="btn btn-danger" id="pomodoro-pause" style="width: auto;"><i class="fas fa-pause"></i> Duraklat</button><button class="btn" id="pomodoro-reset" style="width: auto;"><i class="fas fa-sync"></i> Sıfırla</button></div></div></div>
+        
+            <!-- Email Page -->
+            <div id="email" class="page-section">
+                <div class="hero">
+                    <h1>E-posta Gönder 📧</h1>
+                    <p>Doğrudan uygulamadan e-posta oluşturun</p>
+                </div>
+                <div class="card">
+                    <h3>Yeni E-posta</h3>
+                    <form id="emailForm">
+                        <div class="form-group">
+                            <label for="emailRecipient">Alıcı</label>
+                            <input type="email" id="emailRecipient" required placeholder="alici@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="emailSubject">Konu</label>
+                            <input type="text" id="emailSubject" required placeholder="E-postanızın konusu">
+                        </div>
+                        <div class="form-group">
+                            <label for="emailBody">Mesaj</label>
+                            <textarea id="emailBody" rows="8" required placeholder="Mesajınızı buraya yazın..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: auto;"><i class="fas fa-paper-plane"></i> E-postayı Gönder</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals (Add Task, Add Class) -->
+    <div id="addTaskModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Görev Ekle</h3><form id="addTaskForm"><div class="form-group"><label for="taskTitle">Görev Başlığı</label><input type="text" id="taskTitle" required placeholder="Örn: Matematik Ödevi"></div><div class="form-group"><label for="taskMeta">Detay (Opsiyonel)</label><input type="text" id="taskMeta" placeholder="Örn: Sayfa 42'deki problemler"></div><div class="form-group"><label for="taskTime">Bitiş Saati</label><input type="time" id="taskTime" required></div><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Görevi Kaydet</button></form></div></div>
+    <div id="addClassModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Ders Ekle</h3><form id="addClassForm"><div class="form-group"><label for="className">Ders Adı</label><input type="text" id="className" required placeholder="Örn: Fizik"></div><div class="form-group"><label for="classDay">Gün</label><select id="classDay"><option>Pazartesi</option><option>Salı</option><option>Çarşamba</option><option>Perşembe</option><option>Cuma</option><option>Cumartesi</option><option>Pazar</option></select></div><div class="form-group" style="display: flex; gap: 1rem;"><div style="flex: 1;"><label for="classTimeStart">Başlangıç</label><input type="time" id="classTimeStart" required></div><div style="flex: 1;"><label for="classTimeEnd">Bitiş</label><input type="time" id="classTimeEnd" required></div></div><div class="form-group"><label for="classTeacher">Öğretmen / Yer (Opsiyonel)</label><input type="text" id="classTeacher" placeholder="Örn: Prof. Ahmet - A101"></div><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Dersi Kaydet</button></form></div></div>
+    
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="notification-toast"></div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // --- DATA & STATE MANAGEMENT ---
+        let tasks = [];
+        let classes = [];
+        let currentUser = null;
+        
+        const loadUserData = (username) => {
+            tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || [];
+            classes = JSON.parse(localStorage.getItem(`classes_${username}`)) || [];
+        };
+        
+        const saveData = () => {
+            if (!currentUser) return;
+            localStorage.setItem(`tasks_${currentUser}`, JSON.stringify(tasks));
+            localStorage.setItem(`classes_${currentUser}`, JSON.stringify(classes));
+        };
+
+        // --- DOM ELEMENT SELECTORS ---
+        const loginPage = document.getElementById('login-page');
+        const appContainer = document.getElementById('app-container');
+        const pageSections = document.querySelectorAll('.page-section');
+        const navItems = document.querySelectorAll('.nav-item, .logo');
+        const navMenu = document.getElementById('nav-menu');
+        const navToggle = document.getElementById('nav-toggle');
+
+        // --- AUTH & PAGE VISIBILITY ---
+        const showLoginPage = () => {
+            appContainer.style.display = 'none';
+            loginPage.style.display = 'flex';
+            loginPage.classList.add('active');
+        };
+
+        const showApp = (username) => {
+            currentUser = username;
+            loadUserData(currentUser);
+            loginPage.style.display = 'none';
+            loginPage.classList.remove('active');
+            appContainer.style.display = 'block';
+            const userDisplay = username.split('@')[0];
+            document.getElementById('welcome-message').textContent = `Hoş Geldin, ${userDisplay}! 🌟`;
+            initializeAppData();
+        };
+        
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('emailLogin').value.trim();
+            if (email) {
+                localStorage.setItem('loggedInUser', email);
+                showApp(email);
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('loggedInUser');
+            currentUser = null;
+            tasks = [];
+            classes = [];
+            showLoginPage();
+        });
+
+        // --- PAGE NAVIGATION ---
+        const showPage = (pageId) => {
+            pageSections.forEach(section => {
+                if(section.id !== 'login-page') section.classList.remove('active');
+            });
+            document.getElementById(pageId)?.classList.add('active');
+
+            navItems.forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[data-page="${pageId}"], .logo[data-page="${pageId}"]`)?.classList.add('active');
+            
+            navMenu.classList.remove('active');
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = item.getAttribute('data-page');
+                if (pageId) showPage(pageId);
+            });
+        });
+
+        navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+
+        // --- MODAL HANDLING ---
+        const modals = document.querySelectorAll('.modal');
+        const showModal = (modalId) => document.getElementById(modalId)?.classList.add('active');
+        const closeModal = () => modals.forEach(modal => modal.classList.remove('active'));
+
+        document.querySelectorAll('[id^="open-"], #dashboard-add-task-btn').forEach(btn => {
+            const modalId = btn.id.includes('addTask') || btn.id.includes('dashboard-add') ? 'addTaskModal' : 'addClassModal';
+            btn.addEventListener('click', () => showModal(modalId));
+        });
+
+        modals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal || e.target.closest('.modal-close-btn')) {
+                    closeModal();
+                }
+            });
+        });
+
+        // --- TASK & SCHEDULE RENDERING LOGIC (same as before) ---
+        const allTasksList = document.getElementById('all-tasks-list');
+        const dashboardTaskList = document.getElementById('dashboard-task-list');
+
+        const renderTasks = () => {
+            allTasksList.innerHTML = '';
+            dashboardTaskList.innerHTML = '';
+            const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed || a.time.localeCompare(b.time));
+            if (sortedTasks.length === 0) {
+                const emptyMsg = '<p style="text-align:center; opacity: 0.7;">Henüz görev eklenmemiş.</p>';
+                allTasksList.innerHTML = emptyMsg;
+                dashboardTaskList.innerHTML = emptyMsg;
+            } else {
+                sortedTasks.forEach(task => {
+                    const taskHTML = `<div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}"><div class="task-checkbox ${task.completed ? 'completed' : ''}" role="button">${task.completed ? '<i class="fas fa-check"></i>' : ''}</div><div class="task-content"><div class="task-title">${task.title}</div><div class="task-meta">${task.meta}</div></div><div class="task-time">${task.time}</div><div class="task-actions"><button class="task-delete-btn"><i class="fas fa-trash-alt"></i></button></div></div>`;
+                    allTasksList.innerHTML += taskHTML;
+                    dashboardTaskList.innerHTML += taskHTML;
+                });
+            }
+            updateStats();
+        };
+
+        document.getElementById('addTaskForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const form = e.target;
+            tasks.push({ id: Date.now(), title: form.taskTitle.value, meta: form.taskMeta.value, time: form.taskTime.value, completed: false });
+            saveData();
+            renderTasks();
+            form.reset();
+            closeModal();
+        });
+
+        function handleTaskInteraction(e) {
+            const taskItem = e.target.closest('.task-item');
+            if (!taskItem) return;
+            const taskId = Number(taskItem.dataset.id);
+            const task = tasks.find(t => t.id === taskId);
+            if (e.target.closest('.task-checkbox')) task.completed = !task.completed;
+            if (e.target.closest('.task-delete-btn')) tasks = tasks.filter(t => t.id !== taskId);
+            saveData();
+            renderTasks();
+        }
+        allTasksList.addEventListener('click', handleTaskInteraction);
+        dashboardTaskList.addEventListener('click', handleTaskInteraction);
+        
+        const scheduleContainer = document.getElementById('schedule-grid-container');
+        const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+        const renderClasses = () => {
+            scheduleContainer.innerHTML = '';
+            daysOfWeek.forEach(day => {
+                const dayClasses = classes.filter(c => c.day === day).sort((a,b) => a.start.localeCompare(b.start));
+                const classesHTML = dayClasses.map(c => `<div class="class-item" data-id="${c.id}"><strong>${c.name}</strong><br>${c.start} - ${c.end}<br><small>${c.teacher}</small><button class="class-delete-btn"><i class="fas fa-times"></i></button></div>`).join('');
+                scheduleContainer.innerHTML += `<div class="day-column"><div class="day-header">${day}</div>${classesHTML || '<p style="text-align:center; font-size: 0.9em; opacity: 0.6; margin-top:1rem;">Ders yok</p>'}</div>`;
+            });
+            updateStats();
+        };
+
+        document.getElementById('addClassForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const form = e.target;
+            classes.push({ id: Date.now(), name: form.className.value, day: form.classDay.value, start: form.classTimeStart.value, end: form.classTimeEnd.value, teacher: form.classTeacher.value });
+            saveData();
+            renderClasses();
+            form.reset();
+            closeModal();
+        });
+
+        scheduleContainer.addEventListener('click', e => {
+            if (e.target.closest('.class-delete-btn')) {
+                const classId = Number(e.target.closest('.class-item').dataset.id);
+                classes = classes.filter(c => c.id !== classId);
+                saveData();
+                renderClasses();
+            }
+        });
+
+        const updateStats = () => {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.completed).length;
+            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('stats-total-tasks').textContent = totalTasks;
+            document.getElementById('stats-completed-tasks').textContent = completedTasks;
+            document.getElementById('stats-pending-tasks').textContent = totalTasks - completedTasks;
+            document.getElementById('stats-total-classes').textContent = classes.length;
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = totalTasks > 0 ? `${progress}% tamamlandı - Harika gidiyorsun! 🚀` : `Başlamak için bir görev ekle!`;
+        };
+        
+        // --- POMODORO TIMER (no changes) ---
+        const pomodoroDisplay = document.getElementById('pomodoro-display');
+        let timer, isRunning = false, timeLeft;
+        const modes = { pomodoro: 25 * 60, short: 5 * 60, long: 15 * 60 };
+        let currentMode = 'pomodoro';
+        const alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+        const updateDisplay = () => { let m = Math.floor(timeLeft / 60), s = timeLeft % 60; pomodoroDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; document.title = `${pomodoroDisplay.textContent} - StudyFlow`; };
+        const startTimer = () => { if (isRunning) return; isRunning = true; timer = setInterval(() => { timeLeft--; updateDisplay(); if (timeLeft <= 0) { clearInterval(timer); isRunning = false; alarmSound.play(); alert("Süre doldu!"); resetTimer(); } }, 1000); };
+        const pauseTimer = () => { clearInterval(timer); isRunning = false; };
+        const resetTimer = () => { pauseTimer(); timeLeft = modes[currentMode]; updateDisplay(); };
+        const setMode = (mode) => { currentMode = mode; resetTimer(); };
+        document.getElementById('pomodoro-start').addEventListener('click', startTimer);
+        document.getElementById('pomodoro-pause').addEventListener('click', pauseTimer);
+        document.getElementById('pomodoro-reset').addEventListener('click', resetTimer);
+        document.getElementById('mode-pomodoro').addEventListener('click', () => setMode('pomodoro'));
+        document.getElementById('mode-short').addEventListener('click', () => setMode('short'));
+        document.getElementById('mode-long').addEventListener('click', () => setMode('long'));
+
+        // --- EMAIL SENDING ---
+        document.getElementById('emailForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const recipient = document.getElementById('emailRecipient').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+
+            // Create mailto link and trigger default email client
+            const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            window.location.href = mailtoLink;
+        });
+
+        // --- UPCOMING EVENT NOTIFICATION ---
+        const NOTIFICATION_WINDOW_MINUTES = 60; 
+
+        const checkUpcomingEvents = () => {
+            const now = new Date();
+            const upcomingEvents = [];
+            const dayMap = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+            const todayName = dayMap[now.getDay()];
+
+            tasks.forEach(task => {
+                if (!task.completed && task.time) {
+                    const [hours, minutes] = task.time.split(':');
+                    const taskTime = new Date();
+                    taskTime.setHours(hours, minutes, 0, 0);
+                    const diffMinutes = (taskTime.getTime() - now.getTime()) / 60000;
+                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES) {
+                        upcomingEvents.push({ type: 'Görev', title: task.title, time: task.time });
+                    }
+                }
+            });
+
+            classes.forEach(cls => {
+                if (cls.day === todayName && cls.start) {
+                    const [hours, minutes] = cls.start.split(':');
+                    const classTime = new Date();
+                    classTime.setHours(hours, minutes, 0, 0);
+                    const diffMinutes = (classTime.getTime() - now.getTime()) / 60000;
+                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES) {
+                        upcomingEvents.push({ type: 'Ders', title: cls.name, time: cls.start });
+                    }
+                }
+            });
+
+            if (upcomingEvents.length > 0) {
+                upcomingEvents.sort((a,b) => a.time.localeCompare(b.time));
+                showNotification(upcomingEvents[0]);
+            }
+        };
+
+        const showNotification = (event) => {
+            const toast = document.getElementById('notification-toast');
+            if (!toast || !currentUser) return;
+
+            const subject = `StudyFlow Hatırlatıcı: ${event.title}`;
+            const body = `Merhaba,\n\nBu bir hatırlatmadır. Yaklaşan bir etkinliğiniz var:\n\nEtkinlik Türü: ${event.type}\nBaşlık: ${event.title}\nSaat: ${event.time}\n\nİyi çalışmalar!\nStudyFlow`;
+            const mailtoLink = `mailto:${currentUser}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            toast.innerHTML = `
+                <span>🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor.</span>
+                <button id="send-reminder-btn">E-posta Gönder</button>
+                <button id="close-toast-btn" style="background:transparent; font-size: 1.2rem; color: #333;">&times;</button>
+            `;
+            toast.classList.add('show');
+
+            document.getElementById('send-reminder-btn').onclick = () => {
+                window.location.href = mailtoLink;
+                toast.classList.remove('show');
+            };
+            document.getElementById('close-toast-btn').onclick = () => {
+                toast.classList.remove('show');
+            };
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 15000);
+        };
+
+        // --- APP INITIALIZATION ---
+        const initializeAppData = () => {
+            renderTasks();
+            renderClasses();
+            setMode('pomodoro');
+            showPage('dashboard');
+            setTimeout(checkUpcomingEvents, 2000); // Check after a short delay
+        };
+
+        const checkLoginState = () => {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                showApp(loggedInUser);
+            } else {
+                showLoginPage();
+            }
+        };
+
+        checkLoginState();
+    });
+    </script>
+</body>
+</html>
+

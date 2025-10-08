@@ -220,6 +220,22 @@ def init_db():
         )
     ''')
     
+    # Günlük rutin tablosu
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS rutin (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            baslik TEXT NOT NULL,
+            gun TEXT NOT NULL,
+            baslangic_saati TEXT NOT NULL,
+            bitis_saati TEXT NOT NULL,
+            kategori TEXT,
+            aciklama TEXT,
+            renk TEXT DEFAULT '#22c55e',
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     conn.commit()
     return conn
 
@@ -529,8 +545,8 @@ def show_main_app():
         # Navigasyon menüsü
         selected = option_menu(
             menu_title="📋 Menü",
-            options=["🏠 Ana Sayfa", "📅 Ders Programı", "✅ Görevler", "🏆 Başarılar", "📊 İstatistikler"],
-            icons=["house", "calendar", "check-square", "trophy", "bar-chart"],
+            options=["🏠 Ana Sayfa", "📅 Ders Programı", "✅ Görevler", "🧭 Günlük Rutin", "⏱️ Pomodoro", "🏆 Başarılar", "📊 İstatistikler"],
+            icons=["house", "calendar", "check-square", "compass", "clock", "trophy", "bar-chart"],
             menu_icon="cast",
             default_index=0,
             styles={
@@ -548,6 +564,10 @@ def show_main_app():
         show_schedule()
     elif selected == "✅ Görevler":
         show_tasks()
+    elif selected == "🧭 Günlük Rutin":
+        show_daily_routine()
+    elif selected == "⏱️ Pomodoro":
+        show_pomodoro()
     elif selected == "🏆 Başarılar":
         show_achievements()
     elif selected == "📊 İstatistikler":
@@ -1061,7 +1081,7 @@ def show_all_tasks():
         st.markdown('<div class="notion-task-list">', unsafe_allow_html=True)
         
         for task in tasks:
-            task_id, title, description, time, completed, priority = task
+            task_id, title, description, time_val, completed, priority = task
             
             # Öncelik rengi
             priority_class = {
@@ -1079,7 +1099,7 @@ def show_all_tasks():
                 meta_parts.append(f"📄 {description[:30]}{'...' if len(description) > 30 else ''}")
             
             meta_text = " • ".join(meta_parts) if meta_parts else "Detay yok"
-            time_display = f'<span class="notion-task-time">🕐 {time}</span>' if time else ""
+            time_display = f'<span class="notion-task-time">🕐 {time_val}</span>' if time_val else ""
             
             st.markdown(f"""
             <div class="notion-task-item">
@@ -1119,7 +1139,7 @@ def show_all_tasks():
         st.markdown("---")
         st.markdown("**Görev Yönetimi:**")
         for task in tasks:
-            task_id, title, description, time, completed, priority = task
+            task_id, title, description, time_val, completed, priority = task
             col1, col2, col3 = st.columns([2, 1, 1])
             with col1:
                 status = "✅" if completed else "⭕"
@@ -1184,6 +1204,125 @@ def delete_task(task_id):
     conn = init_db()
     cursor = conn.cursor()
     cursor.execute('DELETE FROM gorevler WHERE id = ? AND user_id = ?', (task_id, st.session_state.user_id))
+    conn.commit()
+    conn.close()
+
+def show_daily_routine():
+    st.markdown("### 🧭 Günlük Rutin Yönetimi")
+    tab1, tab2 = st.tabs(["📋 Rutinleri Görüntüle", "➕ Yeni Rutin Ekle"])
+    with tab1:
+        show_all_routines()
+    with tab2:
+        add_new_routine()
+
+def show_all_routines():
+    conn = init_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, baslik, gun, baslangic_saati, bitis_saati, kategori, aciklama, renk
+        FROM rutin
+        WHERE user_id = ?
+        ORDER BY gun, baslangic_saati
+    ''', (st.session_state.user_id,))
+    routines = cursor.fetchall()
+    conn.close()
+    if routines:
+        st.markdown("""
+        <style>
+            .routine-list { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .routine-day-header { background:#f8f9fa; padding:12px 16px; font-weight:600; color:#333; border-bottom:1px solid #e9ecef; }
+            .routine-item { padding:12px 16px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; }
+            .routine-item:last-child { border-bottom:none; }
+            .routine-color { width:4px; height:40px; border-radius:2px; margin-right:12px; }
+            .routine-content { flex:1; display:flex; flex-direction:column; }
+            .routine-title { font-weight:500; color:#333; margin:0; font-size:14px; }
+            .routine-meta { font-size:12px; color:#666; margin-top:2px; }
+            .routine-time { background:#dcfce7; color:#166534; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:600; margin-left:8px; }
+        </style>
+        """, unsafe_allow_html=True)
+        days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        day_names = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+        st.markdown('<div class="routine-list">', unsafe_allow_html=True)
+        for i, day in enumerate(days):
+            day_items = [r for r in routines if r[2] == day]
+            if day_items:
+                st.markdown(f'<div class="routine-day-header">🗓️ {day_names[i]}</div>', unsafe_allow_html=True)
+                for r in day_items:
+                    r_id, title, _day, start, end, category, desc, color = r
+                    meta_parts = []
+                    if category:
+                        meta_parts.append(f"🏷️ {category}")
+                    if desc:
+                        meta_parts.append(f"📄 {desc[:30]}{'...' if len(desc) > 30 else ''}")
+                    meta_text = " • ".join(meta_parts) if meta_parts else "Detay yok"
+                    time_text = f"{start} - {end}"
+                    st.markdown(f"""
+                    <div class="routine-item">
+                        <div class="routine-color" style="background-color:{color}"></div>
+                        <div class="routine-content">
+                            <div class="routine-title">🧭 {title}</div>
+                            <div class="routine-meta">{meta_text}</div>
+                        </div>
+                        <div class="routine-time">{time_text}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown("**Rutin Yönetimi:**")
+        for r in routines:
+            r_id, title, _day, start, end, category, desc, color = r
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"🧭 {title} - {start}")
+            with col2:
+                if st.button("🗑️", key=f"delete_routine_{r_id}", help="Rutini sil"):
+                    delete_routine(r_id)
+                    st.rerun()
+    else:
+        st.info("Henüz rutin eklenmemiş. 'Yeni Rutin Ekle' sekmesi ile başlayın!")
+
+def add_new_routine():
+    with st.form("add_routine_form"):
+        st.markdown("### ➕ Yeni Rutin Ekle")
+        baslik = st.text_input("🧭 Rutin Başlığı", placeholder="Örn: Sabah Çalışması")
+        col1, col2 = st.columns(2)
+        with col1:
+            gun_options = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            gun_names = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+            gun_index = st.selectbox("📅 Gün", range(len(gun_names)), format_func=lambda x: gun_names[x])
+            gun = gun_options[gun_index]
+        with col2:
+            renk = st.color_picker("🎨 Renk", "#22c55e")
+        col3, col4 = st.columns(2)
+        with col3:
+            baslangic_saati = st.time_input("🕐 Başlangıç Saati", datetime.time(8, 0))
+        with col4:
+            bitis_saati = st.time_input("🕐 Bitiş Saati", datetime.time(9, 0))
+        col5, col6 = st.columns(2)
+        with col5:
+            kategori = st.text_input("🏷️ Kategori", placeholder="Örn: Ders Çalışma")
+        with col6:
+            aciklama = st.text_input("📄 Açıklama", placeholder="Kısa açıklama (opsiyonel)")
+        submit = st.form_submit_button("✨ Rutin Ekle", width='stretch')
+        if submit:
+            if baslik:
+                conn = init_db()
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO rutin (user_id, baslik, gun, baslangic_saati, bitis_saati, kategori, aciklama, renk)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (st.session_state.user_id, baslik, gun, str(baslangic_saati), str(bitis_saati), kategori, aciklama, renk))
+                conn.commit()
+                conn.close()
+                st.success("🎉 Rutin eklendi!")
+                st.rerun()
+            else:
+                st.error("❌ Lütfen rutin başlığını girin!")
+
+def delete_routine(routine_id):
+    conn = init_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM rutin WHERE id = ? AND user_id = ?', (routine_id, st.session_state.user_id))
     conn.commit()
     conn.close()
 
@@ -1285,6 +1424,52 @@ def show_statistics():
         st.dataframe(df, use_container_width=True)
     else:
         st.info("Henüz yeterli veri bulunmuyor. Görevler ekleyerek istatistiklerinizi görebilirsiniz!")
+
+def show_pomodoro():
+    st.markdown("### ⏱️ Pomodoro Zamanlayıcı")
+    if 'pomo_running' not in st.session_state:
+        st.session_state.pomo_running = False
+    if 'pomo_end' not in st.session_state:
+        st.session_state.pomo_end = None
+    if 'pomo_mode' not in st.session_state:
+        st.session_state.pomo_mode = 'work'  # work | break
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        work_min = st.number_input("Çalışma (dk)", min_value=10, max_value=120, value=25, step=5)
+    with col2:
+        break_min = st.number_input("Mola (dk)", min_value=3, max_value=30, value=5, step=1)
+    with col3:
+        cycles = st.number_input("Döngü", min_value=1, max_value=12, value=1, step=1)
+    if st.button("Başlat" if not st.session_state.pomo_running else "Durdur", use_container_width=True):
+        if not st.session_state.pomo_running:
+            duration = work_min if st.session_state.pomo_mode == 'work' else break_min
+            st.session_state.pomo_end = time.time() + duration * 60
+            st.session_state.pomo_running = True
+        else:
+            st.session_state.pomo_running = False
+    if st.button("Sıfırla", use_container_width=True):
+        st.session_state.pomo_running = False
+        st.session_state.pomo_end = None
+        st.session_state.pomo_mode = 'work'
+    remaining_placeholder = st.empty()
+    phase_placeholder = st.empty()
+    progress_placeholder = st.empty()
+    if st.session_state.pomo_running and st.session_state.pomo_end:
+        remaining = max(0, int(st.session_state.pomo_end - time.time()))
+        mins = remaining // 60
+        secs = remaining % 60
+        phase_placeholder.markdown(f"**Aşama:** {'Çalışma' if st.session_state.pomo_mode=='work' else 'Mola'}")
+        remaining_placeholder.markdown(f"**Kalan Süre:** {mins:02d}:{secs:02d}")
+        total = (work_min if st.session_state.pomo_mode=='work' else break_min) * 60
+        progress = 1 - (remaining / total if total else 1)
+        progress_placeholder.progress(progress)
+        if remaining == 0:
+            st.session_state.pomo_running = False
+            st.session_state.pomo_mode = 'break' if st.session_state.pomo_mode == 'work' else 'work'
+            st.success("Aşama tamamlandı! Bir sonraki aşamaya geçmek için Başlat'a basın.")
+    else:
+        phase_placeholder.markdown(f"**Aşama:** {'Çalışma' if st.session_state.pomo_mode=='work' else 'Mola'}")
+        remaining_placeholder.markdown("**Kalan Süre:** Hazır")
 
 if __name__ == "__main__":
     main()
