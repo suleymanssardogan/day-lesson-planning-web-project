@@ -1,2 +1,2 @@
 You can reach the website 
-https://github.com/suleymanssardogan/day-lesson-planning-web-project
+https://suleymanssardogan.github.io/day-lesson-planning-web-project/
