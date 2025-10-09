@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyFlow - Modern Ders Programı</title>
-    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -46,7 +45,6 @@
             100% { background-position: 0% 50%; }
         }
         
-        /* --- Login Page --- */
         #login-page {
             display: flex;
             align-items: center;
@@ -61,11 +59,32 @@
             text-align: center;
         }
 
+        #signUpForm { display: none; }
+
+        .auth-toggle-link {
+            color: var(--white-90);
+            text-decoration: none;
+            margin-top: 1.5rem;
+            display: inline-block;
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .auth-toggle-link:hover {
+            border-bottom-color: var(--white-90);
+        }
+        #auth-message {
+            margin-top: 1rem;
+            min-height: 20px;
+            font-weight: 500;
+        }
+        .auth-success { color: var(--accent-color-2); }
+        .auth-error { color: var(--danger-color); }
+
         #app-container {
-            display: none; /* Hidden by default */
+            display: none;
         }
 
-        /* --- Utilities & Global Styles --- */
         .card, .stat-card, .feature-card, .login-card {
             background: var(--white-15);
             backdrop-filter: blur(25px);
@@ -98,7 +117,7 @@
             align-items: center;
             gap: 0.5rem;
             justify-content: center;
-            width: 100%; /* For login form */
+            width: 100%;
         }
 
         .btn:hover {
@@ -121,7 +140,6 @@
         h2 { color: white; margin-bottom: 2rem; text-align: center; font-size: 2rem; }
         h3 { color: white; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600;}
 
-        /* --- Navigation --- */
         .nav {
             position: fixed;
             top: 0;
@@ -158,7 +176,6 @@
         #logout-btn { background: var(--danger-color); font-size: 0.9rem; padding: 0.5rem 1.2rem; }
         .nav-toggle { display: none; background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; z-index: 1100; }
 
-        /* --- Hero Section --- */
         .hero { text-align: center; margin-bottom: 4rem; animation: fadeInUp 1s ease; }
         .hero p { font-size: 1.3rem; color: var(--white-90); margin: 1rem 0 2rem; }
 
@@ -167,7 +184,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Task List, Schedule, Pomodoro, etc. --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
         .stat-number { font-size: 3rem; font-weight: bold; color: white; margin-bottom: 0.5rem; }
         .stat-label { color: var(--white-90); font-size: 1.1rem; }
@@ -275,10 +291,9 @@
         .page-section { display: none; }
         .page-section.active { display: block; animation: fadeInUp 0.6s ease; }
 
-        /* --- Notification Toast --- */
         .notification-toast {
             position: fixed;
-            bottom: -100%; /* Initially hidden */
+            bottom: -100%;
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(135deg, var(--accent-color-1), var(--accent-color-2));
@@ -292,22 +307,13 @@
             align-items: center;
             gap: 1rem;
             max-width: 90%;
+            min-height: 60px; /* Make sure it's visible */
         }
         .notification-toast.show {
-            bottom: 20px; /* Slide in */
+            bottom: 20px;
         }
-        .notification-toast button {
-            background: rgba(255,255,255,0.3);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #333;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
+        /* No button styles needed here as buttons are removed */
 
-        /* --- Live Clock --- */
         .live-clock {
             color: white;
             font-size: 1rem;
@@ -317,7 +323,6 @@
             text-align: center;
         }
 
-        /* --- Responsive Design --- */
         @media (max-width: 992px) {
             .live-clock {
                 display: none;
@@ -335,6 +340,7 @@
             }
             .nav-menu.active { right: 0; }
             .nav-item { display: block; padding: 1.5rem 2rem; border-radius: 0; width: 100%; text-align: left;}
+            #logout-btn { background: var(--danger-color); font-size: 0.9rem; padding: 0.5rem 1.2rem; width: 80%; margin: 1rem auto; text-align: center; }
             .nav-toggle { display: block; }
         }
 
@@ -349,26 +355,42 @@
 </head>
 <body>
     
-    <!-- Login Page -->
     <div id="login-page" class="page-section active">
         <div class="login-card">
             <h1 class="logo" style="font-size: 2.5rem; margin-bottom: 1rem; justify-content: center; display: flex;">📚 StudyFlow</h1>
-            <p style="color: var(--white-90); margin-bottom: 2rem;">Devam etmek için giriş yapın</p>
+            
             <form id="loginForm">
+                <p style="color: var(--white-90); margin-bottom: 2rem;">Devam etmek için giriş yapın</p>
                 <div class="form-group">
-                    <input type="email" id="emailLogin" required placeholder="E-posta Adresi">
+                    <input type="email" id="loginEmail" required placeholder="E-posta Adresi">
                 </div>
                 <div class="form-group">
-                    <input type="password" id="password" placeholder="Şifre (isteğe bağlı)">
+                    <input type="password" id="loginPassword" required placeholder="Şifre">
                 </div>
                 <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> Giriş Yap</button>
             </form>
+
+            <form id="signUpForm">
+                <p style="color: var(--white-90); margin-bottom: 2rem;">Yeni hesap oluşturun</p>
+                <div class="form-group">
+                    <input type="text" id="signUpUsername" required placeholder="Kullanıcı Adı">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signUpEmail" required placeholder="E-posta Adresi">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signUpPassword" required placeholder="Şifre">
+                </div>
+                <button type="submit" class="btn btn-success"><i class="fas fa-user-plus"></i> Kayıt Ol</button>
+            </form>
+
+            <div id="auth-message"></div>
+            <a id="toggleToSignUp" class="auth-toggle-link">Hesabın yok mu? Kayıt Ol</a>
+            <a id="toggleToLogin" class="auth-toggle-link" style="display: none;">Zaten bir hesabın var mı? Giriş Yap</a>
         </div>
     </div>
 
-    <!-- Main Application Container -->
     <main id="app-container">
-        <!-- Navigation -->
         <nav class="nav">
             <div class="nav-container">
                 <a href="#" class="logo" data-page="dashboard">📚 StudyFlow</a>
@@ -378,16 +400,13 @@
                     <a href="#" class="nav-item" data-page="schedule">Ders Programı</a>
                     <a href="#" class="nav-item" data-page="tasks">Görevler</a>
                     <a href="#" class="nav-item" data-page="pomodoro">Pomodoro</a>
-                    <a href="#" class="nav-item" data-page="email"><i class="fas fa-envelope"></i> E-posta Gönder</a>
                     <a href="#" id="logout-btn" class="nav-item">Çıkış Yap <i class="fas fa-sign-out-alt"></i></a>
                 </div>
                 <button class="nav-toggle" id="nav-toggle"><i class="fas fa-bars"></i></button>
             </div>
         </nav>
 
-        <!-- Container for all pages -->
         <div class="container">
-            <!-- Dashboard Page -->
             <div id="dashboard" class="page-section">
                 <div class="hero">
                     <h1 id="welcome-message">Hoş Geldin! 🌟</h1>
@@ -410,7 +429,6 @@
                 </div>
             </div>
 
-            <!-- Schedule Page -->
             <div id="schedule" class="page-section">
                 <div class="hero">
                     <h1>Ders Programı 📅</h1>
@@ -420,7 +438,6 @@
                 <div class="schedule-grid" id="schedule-grid-container"></div>
             </div>
             
-            <!-- Tasks Page -->
             <div id="tasks" class="page-section">
                 <div class="hero">
                     <h1>Görev Yönetimi ✅</h1>
@@ -433,7 +450,6 @@
                 </div>
             </div>
 
-            <!-- Pomodoro Page -->
             <div id="pomodoro" class="page-section">
                 <div class="hero"><h1>Pomodoro Zamanlayıcı ⏳</h1><p>Odaklan, mola ver ve verimliliğini artır</p></div>
                 <div class="pomodoro-timer">
@@ -451,40 +467,12 @@
                     <button id="pomodoro-settings-btn" class="pomodoro-settings-btn" title="Ayarlar"><i class="fas fa-cog"></i></button>
                 </div>
             </div>
-        
-            <!-- Email Page -->
-            <div id="email" class="page-section">
-                <div class="hero">
-                    <h1>E-posta Gönder 📧</h1>
-                    <p>Doğrudan uygulamadan e-posta oluşturun</p>
-                </div>
-                <div class="card">
-                    <h3>Yeni E-posta</h3>
-                    <form id="emailForm">
-                        <div class="form-group">
-                            <label for="emailRecipient">Alıcı</label>
-                            <input type="email" id="emailRecipient" required placeholder="alici@example.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="emailSubject">Konu</label>
-                            <input type="text" id="emailSubject" required placeholder="E-postanızın konusu">
-                        </div>
-                        <div class="form-group">
-                            <label for="emailBody">Mesaj</label>
-                            <textarea id="emailBody" rows="8" required placeholder="Mesajınızı buraya yazın..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: auto;"><i class="fas fa-paper-plane"></i> E-postayı Gönder</button>
-                    </form>
-                </div>
-            </div>
         </div>
     </main>
 
-    <!-- Modals -->
     <div id="addTaskModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Görev Ekle</h3><form id="addTaskForm"><div class="form-group"><label for="taskTitle">Görev Başlığı</label><input type="text" id="taskTitle" required placeholder="Örn: Matematik Ödevi"></div><div class="form-group"><label for="taskMeta">Detay (Opsiyonel)</label><input type="text" id="taskMeta" placeholder="Örn: Sayfa 42'deki problemler"></div><div class="form-group"><label for="taskTime">Bitiş Saati</label><input type="time" id="taskTime" required></div><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Görevi Kaydet</button></form></div></div>
     <div id="addClassModal" class="modal"><div class="modal-content"><button class="modal-close-btn">&times;</button><h3>Yeni Ders Ekle</h3><form id="addClassForm"><div class="form-group"><label for="className">Ders Adı</label><input type="text" id="className" required placeholder="Örn: Fizik"></div><div class="form-group"><label for="classDay">Gün</label><select id="classDay"><option>Pazartesi</option><option>Salı</option><option>Çarşamba</option><option>Perşembe</option><option>Cuma</option><option>Cumartesi</option><option>Pazar</option></select></div><div class="form-group" style="display: flex; gap: 1rem;"><div style="flex: 1;"><label for="classTimeStart">Başlangıç</label><input type="time" id="classTimeStart" required></div><div style="flex: 1;"><label for="classTimeEnd">Bitiş</label><input type="time" id="classTimeEnd" required></div></div><div class="form-group"><label for="classTeacher">Öğretmen / Yer (Opsiyonel)</label><input type="text" id="classTeacher" placeholder="Örn: Prof. Ahmet - A101"></div><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Dersi Kaydet</button></form></div></div>
     
-    <!-- Pomodoro Settings Modal -->
     <div id="pomodoroSettingsModal" class="modal">
         <div class="modal-content">
             <button class="modal-close-btn">&times;</button>
@@ -507,88 +495,144 @@
         </div>
     </div>
     
-    <!-- Notification Toast -->
     <div id="notification-toast" class="notification-toast"></div>
 
     <script>
     document.addEventListener("DOMContentLoaded", () => {
-        // --- DATA & STATE MANAGEMENT ---
+        let users = JSON.parse(localStorage.getItem('studyFlowUsers')) || [];
         let tasks = [];
         let classes = [];
         let currentUser = null;
         let clockInterval = null;
+        let notificationCheckInterval = null;
         let pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
+        let notifiedEvents = JSON.parse(sessionStorage.getItem('notifiedEvents')) || {};
         
-        const loadUserData = (username) => {
-            tasks = JSON.parse(localStorage.getItem(`tasks_${username}`)) || [];
-            classes = JSON.parse(localStorage.getItem(`classes_${username}`)) || [];
-            const savedSettings = localStorage.getItem(`pomodoroSettings_${username}`);
+        const loadUserData = (userEmail) => {
+            tasks = JSON.parse(localStorage.getItem(`tasks_${userEmail}`)) || [];
+            classes = JSON.parse(localStorage.getItem(`classes_${userEmail}`)) || [];
+            const savedSettings = localStorage.getItem(`pomodoroSettings_${userEmail}`);
             if (savedSettings) {
                 pomodoroSettings = JSON.parse(savedSettings);
             } else {
-                // Reset to default if no settings are saved for the user
                 pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
             }
         };
         
         const saveData = () => {
             if (!currentUser) return;
-            localStorage.setItem(`tasks_${currentUser}`, JSON.stringify(tasks));
-            localStorage.setItem(`classes_${currentUser}`, JSON.stringify(classes));
-            localStorage.setItem(`pomodoroSettings_${currentUser}`, JSON.stringify(pomodoroSettings));
+            localStorage.setItem(`tasks_${currentUser.email}`, JSON.stringify(tasks));
+            localStorage.setItem(`classes_${currentUser.email}`, JSON.stringify(classes));
+            localStorage.setItem(`pomodoroSettings_${currentUser.email}`, JSON.stringify(pomodoroSettings));
         };
 
-        // --- DOM ELEMENT SELECTORS ---
+        const saveUsers = () => {
+            localStorage.setItem('studyFlowUsers', JSON.stringify(users));
+        };
+
         const loginPage = document.getElementById('login-page');
         const appContainer = document.getElementById('app-container');
         const pageSections = document.querySelectorAll('.page-section');
         const navItems = document.querySelectorAll('.nav-item, .logo');
         const navMenu = document.getElementById('nav-menu');
         const navToggle = document.getElementById('nav-toggle');
+        const loginForm = document.getElementById('loginForm');
+        const signUpForm = document.getElementById('signUpForm');
+        const toggleToSignUp = document.getElementById('toggleToSignUp');
+        const toggleToLogin = document.getElementById('toggleToLogin');
+        const authMessage = document.getElementById('auth-message');
 
-        // --- AUTH & PAGE VISIBILITY ---
         const showLoginPage = () => {
             appContainer.style.display = 'none';
             loginPage.style.display = 'flex';
             loginPage.classList.add('active');
         };
 
-        const showApp = (username) => {
-            currentUser = username;
-            loadUserData(currentUser);
+        const showApp = (userObject) => {
+            currentUser = userObject;
+            loadUserData(currentUser.email);
             loginPage.style.display = 'none';
             loginPage.classList.remove('active');
             appContainer.style.display = 'block';
-            const userDisplay = username.split('@')[0];
-            document.getElementById('welcome-message').textContent = `Hoş Geldin, ${userDisplay}! 🌟`;
+            document.getElementById('welcome-message').textContent = `Hoş Geldin, ${currentUser.username}! 🌟`;
             
             if (clockInterval) clearInterval(clockInterval);
-            updateClock(); // Initial call
+            updateClock();
             clockInterval = setInterval(updateClock, 1000);
+
+            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
+            // Check every minute for upcoming events
+            notificationCheckInterval = setInterval(checkUpcomingEvents, 60000); 
 
             initializeAppData();
         };
         
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        toggleToSignUp.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            signUpForm.style.display = 'block';
+            toggleToSignUp.style.display = 'none';
+            toggleToLogin.style.display = 'block';
+            authMessage.textContent = '';
+        });
+
+        toggleToLogin.addEventListener('click', () => {
+            signUpForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            toggleToLogin.style.display = 'none';
+            toggleToSignUp.style.display = 'block';
+            authMessage.textContent = '';
+        });
+
+        signUpForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('emailLogin').value.trim();
-            if (email) {
-                localStorage.setItem('loggedInUser', email);
-                showApp(email);
+            const username = document.getElementById('signUpUsername').value.trim();
+            const email = document.getElementById('signUpEmail').value.trim();
+            const password = document.getElementById('signUpPassword').value;
+
+            const userExists = users.some(user => user.email === email);
+
+            if (userExists) {
+                authMessage.textContent = 'Bu e-posta adresi zaten kullanılıyor.';
+                authMessage.className = 'auth-error';
+            } else {
+                users.push({ username, email, password });
+                saveUsers();
+                authMessage.textContent = 'Hesap başarıyla oluşturuldu! Lütfen giriş yapın.';
+                authMessage.className = 'auth-success';
+                signUpForm.reset();
+                toggleToLogin.click();
+            }
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const foundUser = users.find(user => user.email === email && user.password === password);
+
+            if (foundUser) {
+                localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
+                showApp(foundUser);
+            } else {
+                authMessage.textContent = 'Geçersiz e-posta veya şifre.';
+                authMessage.className = 'auth-error';
             }
         });
 
         document.getElementById('logout-btn').addEventListener('click', (e) => {
             e.preventDefault();
             localStorage.removeItem('loggedInUser');
+            sessionStorage.removeItem('notifiedEvents'); // Clear notified events on logout
+            notifiedEvents = {}; // Reset in-memory tracking
             currentUser = null;
             tasks = [];
             classes = [];
             if (clockInterval) clearInterval(clockInterval);
+            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
             showLoginPage();
         });
 
-        // --- PAGE NAVIGATION ---
         const showPage = (pageId) => {
             pageSections.forEach(section => {
                 if(section.id !== 'login-page') section.classList.remove('active');
@@ -611,7 +655,6 @@
 
         navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
 
-        // --- MODAL HANDLING ---
         const modals = document.querySelectorAll('.modal');
         const showModal = (modalId) => document.getElementById(modalId)?.classList.add('active');
         const closeModal = () => modals.forEach(modal => modal.classList.remove('active'));
@@ -636,18 +679,16 @@
             });
         });
         
-        // --- POMODORO SETTINGS FORM ---
         document.getElementById('pomodoroSettingsForm').addEventListener('submit', (e) => {
             e.preventDefault();
             pomodoroSettings.pomodoro = parseInt(document.getElementById('settingPomodoro').value, 10);
             pomodoroSettings.short = parseInt(document.getElementById('settingShortBreak').value, 10);
             pomodoroSettings.long = parseInt(document.getElementById('settingLongBreak').value, 10);
             saveData();
-            resetTimer(); // Apply new settings immediately
+            resetTimer();
             closeModal();
         });
 
-        // --- TASK & SCHEDULE RENDERING LOGIC ---
         const allTasksList = document.getElementById('all-tasks-list');
         const dashboardTaskList = document.getElementById('dashboard-task-list');
 
@@ -735,7 +776,6 @@
             document.getElementById('progress-text').textContent = totalTasks > 0 ? `${progress}% tamamlandı - Harika gidiyorsun! 🚀` : `Başlamak için bir görev ekle!`;
         };
         
-        // --- POMODORO TIMER ---
         const pomodoroDisplay = document.getElementById('pomodoro-display');
         let timer, isRunning = false, timeLeft;
         let currentMode = 'pomodoro';
@@ -775,85 +815,133 @@
         document.getElementById('mode-pomodoro').addEventListener('click', () => setMode('pomodoro'));
         document.getElementById('mode-short').addEventListener('click', () => setMode('short'));
         document.getElementById('mode-long').addEventListener('click', () => setMode('long'));
+        
+        const NOTIFICATION_WINDOW_MINUTES = 60; // How far in advance to notify
+        const NOTIFICATION_DISMISS_DURATION = 15000; // How long toast notification stays
+        const NOTIFICATION_EMAIL_DELAY_MS = 1000; // Small delay before sending email after toast appears
 
-        // --- EMAIL SENDING ---
-        document.getElementById('emailForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const recipient = document.getElementById('emailRecipient').value;
-            const subject = document.getElementById('emailSubject').value;
-            const body = document.getElementById('emailBody').value;
-            const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.location.href = mailtoLink;
-        });
+        const sendEmailReminder = async (event, recipientEmail, username) => {
+            const subject = `StudyFlow Hatırlatıcı: ${event.title}`;
+            const bodyHTML = `
+                <p>Merhaba ${username},</p>
+                <p>Bu bir hatırlatmadır. Yaklaşan bir etkinliğiniz var:</p>
+                <ul>
+                    <li><strong>Etkinlik Türü:</strong> ${event.type}</li>
+                    <li><strong>Başlık:</strong> ${event.title}</li>
+                    <li><strong>Saat:</strong> ${event.time}</li>
+                </ul>
+                <p>İyi çalışmalar!<br>StudyFlow</p>
+            `;
 
-        // --- UPCOMING EVENT NOTIFICATION ---
-        const NOTIFICATION_WINDOW_MINUTES = 60; 
+            console.log(`Sending email for event ${event.id} to ${recipientEmail}...`);
+            try {
+                const response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: recipientEmail,
+                        subject: subject,
+                        html: bodyHTML,
+                    }),
+                });
+
+                if (response.ok) {
+                    console.log(`Email sent successfully for event ${event.id}.`);
+                } else {
+                    const errorResult = await response.json();
+                    console.error(`API Error sending email for event ${event.id}:`, errorResult);
+                }
+            } catch (error) {
+                console.error(`Fetch Error sending email for event ${event.id}:`, error);
+            }
+        };
 
         const checkUpcomingEvents = () => {
+            if (!currentUser) return;
             const now = new Date();
             const upcomingEvents = [];
             const dayMap = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
             const todayName = dayMap[now.getDay()];
 
+            // Check tasks
             tasks.forEach(task => {
                 if (!task.completed && task.time) {
                     const [hours, minutes] = task.time.split(':');
                     const taskTime = new Date();
                     taskTime.setHours(hours, minutes, 0, 0);
+
                     const diffMinutes = (taskTime.getTime() - now.getTime()) / 60000;
-                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES) {
-                        upcomingEvents.push({ type: 'Görev', title: task.title, time: task.time });
+                    const eventId = `task-${task.id}`;
+
+                    // Notify if within the window, not in the past, and not already notified
+                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES && !notifiedEvents[eventId]) {
+                        upcomingEvents.push({ type: 'Görev', id: eventId, title: task.title, time: task.time });
                     }
                 }
             });
 
+            // Check classes
             classes.forEach(cls => {
                 if (cls.day === todayName && cls.start) {
                     const [hours, minutes] = cls.start.split(':');
                     const classTime = new Date();
                     classTime.setHours(hours, minutes, 0, 0);
                     const diffMinutes = (classTime.getTime() - now.getTime()) / 60000;
-                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES) {
-                        upcomingEvents.push({ type: 'Ders', title: cls.name, time: cls.start });
+                    const eventId = `class-${cls.id}`;
+
+                    // Notify if within the window, not in the past, and not already notified
+                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES && !notifiedEvents[eventId]) {
+                        upcomingEvents.push({ type: 'Ders', id: eventId, title: cls.name, time: cls.start });
                     }
                 }
             });
 
+            // If there are upcoming events, process the earliest one
             if (upcomingEvents.length > 0) {
-                upcomingEvents.sort((a,b) => a.time.localeCompare(b.time));
+                upcomingEvents.sort((a,b) => {
+                    // Sort by time, if times are equal, sort by type (task before class)
+                    const timeComparison = a.time.localeCompare(b.time);
+                    if (timeComparison === 0) {
+                        return a.type === 'Görev' ? -1 : 1;
+                    }
+                    return timeComparison;
+                });
                 showNotification(upcomingEvents[0]);
             }
         };
 
         const showNotification = (event) => {
             const toast = document.getElementById('notification-toast');
-            if (!toast || !currentUser) return;
+            if (!toast || !currentUser) return; // Ensure currentUser is available
 
-            const subject = `StudyFlow Hatırlatıcı: ${event.title}`;
-            const body = `Merhaba,\n\nBu bir hatırlatmadır. Yaklaşan bir etkinliğiniz var:\n\nEtkinlik Türü: ${event.type}\nBaşlık: ${event.title}\nSaat: ${event.time}\n\nİyi çalışmalar!\nStudyFlow`;
-            const mailtoLink = `mailto:${currentUser}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // Mark event as notified for current session
+            notifiedEvents[event.id] = true;
+            sessionStorage.setItem('notifiedEvents', JSON.stringify(notifiedEvents));
 
             toast.innerHTML = `
-                <span>🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor.</span>
-                <button id="send-reminder-btn">E-posta Gönder</button>
+                <span>🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor. E-posta gönderiliyor...</span>
                 <button id="close-toast-btn" style="background:transparent; font-size: 1.2rem; color: #333;">&times;</button>
             `;
             toast.classList.add('show');
 
-            document.getElementById('send-reminder-btn').onclick = () => {
-                window.location.href = mailtoLink;
-                toast.classList.remove('show');
-            };
+            // Automatically send email after a short delay
+            setTimeout(() => {
+                sendEmailReminder(event, currentUser.email, currentUser.username);
+                // Update toast message after email is sent or attempted
+                toast.querySelector('span').textContent = `🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor. E-posta gönderildi!`;
+            }, NOTIFICATION_EMAIL_DELAY_MS);
+
+            // Close button for the toast notification
             document.getElementById('close-toast-btn').onclick = () => {
                 toast.classList.remove('show');
             };
 
+            // Automatically dismiss the toast after a set duration
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 15000);
+            }, NOTIFICATION_DISMISS_DURATION);
         };
 
-        // --- LIVE CLOCK ---
         const clockElement = document.getElementById('live-clock');
         function updateClock() {
             if (!clockElement) return;
@@ -875,19 +963,19 @@
             `;
         }
 
-        // --- APP INITIALIZATION ---
         const initializeAppData = () => {
             renderTasks();
             renderClasses();
-            setMode('pomodoro'); // Initialize Pomodoro with default mode but user settings
+            setMode('pomodoro');
             showPage('dashboard');
-            setTimeout(checkUpcomingEvents, 2000); // Check after a short delay
+            checkUpcomingEvents(); // Initial check on app load
         };
 
         const checkLoginState = () => {
-            const loggedInUser = localStorage.getItem('loggedInUser');
-            if (loggedInUser) {
-                showApp(loggedInUser);
+            const loggedInUserJSON = localStorage.getItem('loggedInUser');
+            if (loggedInUserJSON) {
+                const user = JSON.parse(loggedInUserJSON);
+                showApp(user);
             } else {
                 showLoginPage();
             }
@@ -898,4 +986,3 @@
     </script>
 </body>
 </html>
-
