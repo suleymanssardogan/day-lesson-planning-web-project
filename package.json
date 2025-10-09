@@ -1,0 +1,15 @@
+{
+  "name": "studyflow-app",
+  "version": "1.0.0",
+  "description": "Modern Ders Programı Uygulaması",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "resend": "^3.2.0"  
+  },
+  "devDependencies": {},
+  "author": "Your Name",
+  "license": "ISC"
+}
