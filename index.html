@@ -221,9 +221,34 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        .task-actions { display: flex; gap: 0.5rem; }
+        .task-actions { display: flex; gap: 0.5rem; align-items: center; }
         .task-delete-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
         .task-delete-btn:hover { transform: scale(1.2); }
+        
+        /* Düzenleme butonu için yeni stiller */
+        .task-edit-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .task-edit-btn:hover { transform: scale(1.2); }
+        
+        .class-edit-btn {
+            position: absolute;
+            top: 5px;
+            right: 35px; /* Silme butonunun yanına konumlandır */
+            background: none;
+            border: none;
+            color: white;
+            opacity: 0.6;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .class-edit-btn:hover { opacity: 1; }
+        
         .progress-bar { width: 100%; height: 20px; background: var(--white-20); border-radius: 10px; overflow: hidden; margin: 1rem 0; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color-1), var(--accent-color-2)); border-radius: 10px; transition: width 0.5s ease; }
         .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
@@ -231,7 +256,7 @@
         .day-header { color: white; font-weight: bold; text-align: center; padding: 0.75rem; margin-bottom: 0.5rem; background: var(--white-20); border-radius: 10px; }
         .class-item { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); padding: 1rem; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease; cursor: pointer; position: relative; }
         .class-item:hover { transform: scale(1.05); box-shadow: 0 5px 15px var(--black-30); }
-        .class-delete-btn { position: absolute; top: 5px; right: 8px; background: none; border: none; color: white; opacity: 0.6; cursor: pointer; }
+        .class-delete-btn { position: absolute; top: 5px; right: 8px; background: none; border: none; color: white; opacity: 0.6; cursor: pointer; font-size: 1.1rem; }
         .class-delete-btn:hover { opacity: 1; }
         .pomodoro-timer { text-align: center; background: var(--white-10); border-radius: 30px; padding: 3rem; margin: 2rem 0; }
         .timer-display { font-size: 5rem; font-weight: bold; margin-bottom: 2rem; text-shadow: 0 4px 20px var(--black-30); }
@@ -278,12 +303,12 @@
             font-size: 1.8rem; color: #888; cursor: pointer;
         }
         .form-group { margin-bottom: 1.25rem; text-align: left;}
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #555; }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 0.8rem; border: 1px solid #ddd;
             border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;
             background-color: #f9f9f9; color: #333;
         }
-
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none; border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
@@ -307,13 +332,12 @@
             align-items: center;
             gap: 1rem;
             max-width: 90%;
-            min-height: 60px; /* Make sure it's visible */
+            min-height: 60px;
         }
         .notification-toast.show {
             bottom: 20px;
         }
-        /* No button styles needed here as buttons are removed */
-
+        
         .live-clock {
             color: white;
             font-size: 1rem;
@@ -497,492 +521,6 @@
     
     <div id="notification-toast" class="notification-toast"></div>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        let users = JSON.parse(localStorage.getItem('studyFlowUsers')) || [];
-        let tasks = [];
-        let classes = [];
-        let currentUser = null;
-        let clockInterval = null;
-        let notificationCheckInterval = null;
-        let pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
-        let notifiedEvents = JSON.parse(sessionStorage.getItem('notifiedEvents')) || {};
-        
-        const loadUserData = (userEmail) => {
-            tasks = JSON.parse(localStorage.getItem(`tasks_${userEmail}`)) || [];
-            classes = JSON.parse(localStorage.getItem(`classes_${userEmail}`)) || [];
-            const savedSettings = localStorage.getItem(`pomodoroSettings_${userEmail}`);
-            if (savedSettings) {
-                pomodoroSettings = JSON.parse(savedSettings);
-            } else {
-                pomodoroSettings = { pomodoro: 25, short: 5, long: 15 };
-            }
-        };
-        
-        const saveData = () => {
-            if (!currentUser) return;
-            localStorage.setItem(`tasks_${currentUser.email}`, JSON.stringify(tasks));
-            localStorage.setItem(`classes_${currentUser.email}`, JSON.stringify(classes));
-            localStorage.setItem(`pomodoroSettings_${currentUser.email}`, JSON.stringify(pomodoroSettings));
-        };
-
-        const saveUsers = () => {
-            localStorage.setItem('studyFlowUsers', JSON.stringify(users));
-        };
-
-        const loginPage = document.getElementById('login-page');
-        const appContainer = document.getElementById('app-container');
-        const pageSections = document.querySelectorAll('.page-section');
-        const navItems = document.querySelectorAll('.nav-item, .logo');
-        const navMenu = document.getElementById('nav-menu');
-        const navToggle = document.getElementById('nav-toggle');
-        const loginForm = document.getElementById('loginForm');
-        const signUpForm = document.getElementById('signUpForm');
-        const toggleToSignUp = document.getElementById('toggleToSignUp');
-        const toggleToLogin = document.getElementById('toggleToLogin');
-        const authMessage = document.getElementById('auth-message');
-
-        const showLoginPage = () => {
-            appContainer.style.display = 'none';
-            loginPage.style.display = 'flex';
-            loginPage.classList.add('active');
-        };
-
-        const showApp = (userObject) => {
-            currentUser = userObject;
-            loadUserData(currentUser.email);
-            loginPage.style.display = 'none';
-            loginPage.classList.remove('active');
-            appContainer.style.display = 'block';
-            document.getElementById('welcome-message').textContent = `Hoş Geldin, ${currentUser.username}! 🌟`;
-            
-            if (clockInterval) clearInterval(clockInterval);
-            updateClock();
-            clockInterval = setInterval(updateClock, 1000);
-
-            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
-            // Check every minute for upcoming events
-            notificationCheckInterval = setInterval(checkUpcomingEvents, 60000); 
-
-            initializeAppData();
-        };
-        
-        toggleToSignUp.addEventListener('click', () => {
-            loginForm.style.display = 'none';
-            signUpForm.style.display = 'block';
-            toggleToSignUp.style.display = 'none';
-            toggleToLogin.style.display = 'block';
-            authMessage.textContent = '';
-        });
-
-        toggleToLogin.addEventListener('click', () => {
-            signUpForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            toggleToLogin.style.display = 'none';
-            toggleToSignUp.style.display = 'block';
-            authMessage.textContent = '';
-        });
-
-        signUpForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('signUpUsername').value.trim();
-            const email = document.getElementById('signUpEmail').value.trim();
-            const password = document.getElementById('signUpPassword').value;
-
-            const userExists = users.some(user => user.email === email);
-
-            if (userExists) {
-                authMessage.textContent = 'Bu e-posta adresi zaten kullanılıyor.';
-                authMessage.className = 'auth-error';
-            } else {
-                users.push({ username, email, password });
-                saveUsers();
-                authMessage.textContent = 'Hesap başarıyla oluşturuldu! Lütfen giriş yapın.';
-                authMessage.className = 'auth-success';
-                signUpForm.reset();
-                toggleToLogin.click();
-            }
-        });
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            const foundUser = users.find(user => user.email === email && user.password === password);
-
-            if (foundUser) {
-                localStorage.setItem('loggedInUser', JSON.stringify(foundUser));
-                showApp(foundUser);
-            } else {
-                authMessage.textContent = 'Geçersiz e-posta veya şifre.';
-                authMessage.className = 'auth-error';
-            }
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('loggedInUser');
-            sessionStorage.removeItem('notifiedEvents'); // Clear notified events on logout
-            notifiedEvents = {}; // Reset in-memory tracking
-            currentUser = null;
-            tasks = [];
-            classes = [];
-            if (clockInterval) clearInterval(clockInterval);
-            if (notificationCheckInterval) clearInterval(notificationCheckInterval);
-            showLoginPage();
-        });
-
-        const showPage = (pageId) => {
-            pageSections.forEach(section => {
-                if(section.id !== 'login-page') section.classList.remove('active');
-            });
-            document.getElementById(pageId)?.classList.add('active');
-
-            navItems.forEach(item => item.classList.remove('active'));
-            document.querySelector(`.nav-item[data-page="${pageId}"], .logo[data-page="${pageId}"]`)?.classList.add('active');
-            
-            navMenu.classList.remove('active');
-        };
-
-        navItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                const pageId = item.getAttribute('data-page');
-                if (pageId) showPage(pageId);
-            });
-        });
-
-        navToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
-
-        const modals = document.querySelectorAll('.modal');
-        const showModal = (modalId) => document.getElementById(modalId)?.classList.add('active');
-        const closeModal = () => modals.forEach(modal => modal.classList.remove('active'));
-
-        document.querySelectorAll('[id^="open-"], #dashboard-add-task-btn').forEach(btn => {
-            const modalId = btn.id.includes('addTask') || btn.id.includes('dashboard-add') ? 'addTaskModal' : 'addClassModal';
-            btn.addEventListener('click', () => showModal(modalId));
-        });
-
-        document.getElementById('pomodoro-settings-btn').addEventListener('click', () => {
-            document.getElementById('settingPomodoro').value = pomodoroSettings.pomodoro;
-            document.getElementById('settingShortBreak').value = pomodoroSettings.short;
-            document.getElementById('settingLongBreak').value = pomodoroSettings.long;
-            showModal('pomodoroSettingsModal');
-        });
-
-        modals.forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal || e.target.closest('.modal-close-btn')) {
-                    closeModal();
-                }
-            });
-        });
-        
-        document.getElementById('pomodoroSettingsForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            pomodoroSettings.pomodoro = parseInt(document.getElementById('settingPomodoro').value, 10);
-            pomodoroSettings.short = parseInt(document.getElementById('settingShortBreak').value, 10);
-            pomodoroSettings.long = parseInt(document.getElementById('settingLongBreak').value, 10);
-            saveData();
-            resetTimer();
-            closeModal();
-        });
-
-        const allTasksList = document.getElementById('all-tasks-list');
-        const dashboardTaskList = document.getElementById('dashboard-task-list');
-
-        const renderTasks = () => {
-            allTasksList.innerHTML = '';
-            dashboardTaskList.innerHTML = '';
-            const sortedTasks = [...tasks].sort((a, b) => a.completed - b.completed || a.time.localeCompare(b.time));
-            if (sortedTasks.length === 0) {
-                const emptyMsg = '<p style="text-align:center; opacity: 0.7;">Henüz görev eklenmemiş.</p>';
-                allTasksList.innerHTML = emptyMsg;
-                dashboardTaskList.innerHTML = emptyMsg;
-            } else {
-                sortedTasks.forEach(task => {
-                    const taskHTML = `<div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}"><div class="task-checkbox ${task.completed ? 'completed' : ''}" role="button">${task.completed ? '<i class="fas fa-check"></i>' : ''}</div><div class="task-content"><div class="task-title">${task.title}</div><div class="task-meta">${task.meta}</div></div><div class="task-time">${task.time}</div><div class="task-actions"><button class="task-delete-btn"><i class="fas fa-trash-alt"></i></button></div></div>`;
-                    allTasksList.innerHTML += taskHTML;
-                    dashboardTaskList.innerHTML += taskHTML;
-                });
-            }
-            updateStats();
-        };
-
-        document.getElementById('addTaskForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const form = e.target;
-            tasks.push({ id: Date.now(), title: form.taskTitle.value, meta: form.taskMeta.value, time: form.taskTime.value, completed: false });
-            saveData();
-            renderTasks();
-            form.reset();
-            closeModal();
-        });
-
-        function handleTaskInteraction(e) {
-            const taskItem = e.target.closest('.task-item');
-            if (!taskItem) return;
-            const taskId = Number(taskItem.dataset.id);
-            const task = tasks.find(t => t.id === taskId);
-            if (e.target.closest('.task-checkbox')) task.completed = !task.completed;
-            if (e.target.closest('.task-delete-btn')) tasks = tasks.filter(t => t.id !== taskId);
-            saveData();
-            renderTasks();
-        }
-        allTasksList.addEventListener('click', handleTaskInteraction);
-        dashboardTaskList.addEventListener('click', handleTaskInteraction);
-        
-        const scheduleContainer = document.getElementById('schedule-grid-container');
-        const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
-        const renderClasses = () => {
-            scheduleContainer.innerHTML = '';
-            daysOfWeek.forEach(day => {
-                const dayClasses = classes.filter(c => c.day === day).sort((a,b) => a.start.localeCompare(b.start));
-                const classesHTML = dayClasses.map(c => `<div class="class-item" data-id="${c.id}"><strong>${c.name}</strong><br>${c.start} - ${c.end}<br><small>${c.teacher}</small><button class="class-delete-btn"><i class="fas fa-times"></i></button></div>`).join('');
-                scheduleContainer.innerHTML += `<div class="day-column"><div class="day-header">${day}</div>${classesHTML || '<p style="text-align:center; font-size: 0.9em; opacity: 0.6; margin-top:1rem;">Ders yok</p>'}</div>`;
-            });
-            updateStats();
-        };
-
-        document.getElementById('addClassForm').addEventListener('submit', e => {
-            e.preventDefault();
-            const form = e.target;
-            classes.push({ id: Date.now(), name: form.className.value, day: form.classDay.value, start: form.classTimeStart.value, end: form.classTimeEnd.value, teacher: form.classTeacher.value });
-            saveData();
-            renderClasses();
-            form.reset();
-            closeModal();
-        });
-
-        scheduleContainer.addEventListener('click', e => {
-            if (e.target.closest('.class-delete-btn')) {
-                const classId = Number(e.target.closest('.class-item').dataset.id);
-                classes = classes.filter(c => c.id !== classId);
-                saveData();
-                renderClasses();
-            }
-        });
-
-        const updateStats = () => {
-            const totalTasks = tasks.length;
-            const completedTasks = tasks.filter(t => t.completed).length;
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            document.getElementById('stats-total-tasks').textContent = totalTasks;
-            document.getElementById('stats-completed-tasks').textContent = completedTasks;
-            document.getElementById('stats-pending-tasks').textContent = totalTasks - completedTasks;
-            document.getElementById('stats-total-classes').textContent = classes.length;
-            document.getElementById('progress-fill').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = totalTasks > 0 ? `${progress}% tamamlandı - Harika gidiyorsun! 🚀` : `Başlamak için bir görev ekle!`;
-        };
-        
-        const pomodoroDisplay = document.getElementById('pomodoro-display');
-        let timer, isRunning = false, timeLeft;
-        let currentMode = 'pomodoro';
-        const alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
-        
-        const updateDisplay = () => { 
-            let m = Math.floor(timeLeft / 60), s = timeLeft % 60; 
-            pomodoroDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`; 
-            document.title = `${pomodoroDisplay.textContent} - StudyFlow`; 
-        };
-        const startTimer = () => { 
-            if (isRunning) return; 
-            isRunning = true; 
-            timer = setInterval(() => { 
-                timeLeft--; 
-                updateDisplay(); 
-                if (timeLeft <= 0) { 
-                    clearInterval(timer); 
-                    isRunning = false; 
-                    alarmSound.play(); 
-                    alert("Süre doldu!"); 
-                    resetTimer(); 
-                } 
-            }, 1000); 
-        };
-        const pauseTimer = () => { clearInterval(timer); isRunning = false; };
-        const resetTimer = () => { 
-            pauseTimer(); 
-            timeLeft = (pomodoroSettings[currentMode] || 25) * 60; 
-            updateDisplay(); 
-        };
-        const setMode = (mode) => { currentMode = mode; resetTimer(); };
-
-        document.getElementById('pomodoro-start').addEventListener('click', startTimer);
-        document.getElementById('pomodoro-pause').addEventListener('click', pauseTimer);
-        document.getElementById('pomodoro-reset').addEventListener('click', resetTimer);
-        document.getElementById('mode-pomodoro').addEventListener('click', () => setMode('pomodoro'));
-        document.getElementById('mode-short').addEventListener('click', () => setMode('short'));
-        document.getElementById('mode-long').addEventListener('click', () => setMode('long'));
-        
-        const NOTIFICATION_WINDOW_MINUTES = 60; // How far in advance to notify
-        const NOTIFICATION_DISMISS_DURATION = 15000; // How long toast notification stays
-        const NOTIFICATION_EMAIL_DELAY_MS = 1000; // Small delay before sending email after toast appears
-
-        const sendEmailReminder = async (event, recipientEmail, username) => {
-            const subject = `StudyFlow Hatırlatıcı: ${event.title}`;
-            const bodyHTML = `
-                <p>Merhaba ${username},</p>
-                <p>Bu bir hatırlatmadır. Yaklaşan bir etkinliğiniz var:</p>
-                <ul>
-                    <li><strong>Etkinlik Türü:</strong> ${event.type}</li>
-                    <li><strong>Başlık:</strong> ${event.title}</li>
-                    <li><strong>Saat:</strong> ${event.time}</li>
-                </ul>
-                <p>İyi çalışmalar!<br>StudyFlow</p>
-            `;
-
-            console.log(`Sending email for event ${event.id} to ${recipientEmail}...`);
-            try {
-                const response = await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        to: recipientEmail,
-                        subject: subject,
-                        html: bodyHTML,
-                    }),
-                });
-
-                if (response.ok) {
-                    console.log(`Email sent successfully for event ${event.id}.`);
-                } else {
-                    const errorResult = await response.json();
-                    console.error(`API Error sending email for event ${event.id}:`, errorResult);
-                }
-            } catch (error) {
-                console.error(`Fetch Error sending email for event ${event.id}:`, error);
-            }
-        };
-
-        const checkUpcomingEvents = () => {
-            if (!currentUser) return;
-            const now = new Date();
-            const upcomingEvents = [];
-            const dayMap = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-            const todayName = dayMap[now.getDay()];
-
-            // Check tasks
-            tasks.forEach(task => {
-                if (!task.completed && task.time) {
-                    const [hours, minutes] = task.time.split(':');
-                    const taskTime = new Date();
-                    taskTime.setHours(hours, minutes, 0, 0);
-
-                    const diffMinutes = (taskTime.getTime() - now.getTime()) / 60000;
-                    const eventId = `task-${task.id}`;
-
-                    // Notify if within the window, not in the past, and not already notified
-                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES && !notifiedEvents[eventId]) {
-                        upcomingEvents.push({ type: 'Görev', id: eventId, title: task.title, time: task.time });
-                    }
-                }
-            });
-
-            // Check classes
-            classes.forEach(cls => {
-                if (cls.day === todayName && cls.start) {
-                    const [hours, minutes] = cls.start.split(':');
-                    const classTime = new Date();
-                    classTime.setHours(hours, minutes, 0, 0);
-                    const diffMinutes = (classTime.getTime() - now.getTime()) / 60000;
-                    const eventId = `class-${cls.id}`;
-
-                    // Notify if within the window, not in the past, and not already notified
-                    if (diffMinutes > 0 && diffMinutes <= NOTIFICATION_WINDOW_MINUTES && !notifiedEvents[eventId]) {
-                        upcomingEvents.push({ type: 'Ders', id: eventId, title: cls.name, time: cls.start });
-                    }
-                }
-            });
-
-            // If there are upcoming events, process the earliest one
-            if (upcomingEvents.length > 0) {
-                upcomingEvents.sort((a,b) => {
-                    // Sort by time, if times are equal, sort by type (task before class)
-                    const timeComparison = a.time.localeCompare(b.time);
-                    if (timeComparison === 0) {
-                        return a.type === 'Görev' ? -1 : 1;
-                    }
-                    return timeComparison;
-                });
-                showNotification(upcomingEvents[0]);
-            }
-        };
-
-        const showNotification = (event) => {
-            const toast = document.getElementById('notification-toast');
-            if (!toast || !currentUser) return; // Ensure currentUser is available
-
-            // Mark event as notified for current session
-            notifiedEvents[event.id] = true;
-            sessionStorage.setItem('notifiedEvents', JSON.stringify(notifiedEvents));
-
-            toast.innerHTML = `
-                <span>🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor. E-posta gönderiliyor...</span>
-                <button id="close-toast-btn" style="background:transparent; font-size: 1.2rem; color: #333;">&times;</button>
-            `;
-            toast.classList.add('show');
-
-            // Automatically send email after a short delay
-            setTimeout(() => {
-                sendEmailReminder(event, currentUser.email, currentUser.username);
-                // Update toast message after email is sent or attempted
-                toast.querySelector('span').textContent = `🔔 <strong>Hatırlatma:</strong> "${event.title}" etkinliğiniz saat ${event.time}'da başlıyor. E-posta gönderildi!`;
-            }, NOTIFICATION_EMAIL_DELAY_MS);
-
-            // Close button for the toast notification
-            document.getElementById('close-toast-btn').onclick = () => {
-                toast.classList.remove('show');
-            };
-
-            // Automatically dismiss the toast after a set duration
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, NOTIFICATION_DISMISS_DURATION);
-        };
-
-        const clockElement = document.getElementById('live-clock');
-        function updateClock() {
-            if (!clockElement) return;
-            const now = new Date();
-            const days = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-            const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-
-            const dayName = days[now.getDay()];
-            const day = now.getDate();
-            const monthName = months[now.getMonth()];
-            const year = now.getFullYear();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-
-            clockElement.innerHTML = `
-                <span>${hours}:${minutes}:${seconds}</span>
-                <span style="opacity: 0.8; margin-left: 10px;">${day} ${monthName} ${year}, ${dayName}</span>
-            `;
-        }
-
-        const initializeAppData = () => {
-            renderTasks();
-            renderClasses();
-            setMode('pomodoro');
-            showPage('dashboard');
-            checkUpcomingEvents(); // Initial check on app load
-        };
-
-        const checkLoginState = () => {
-            const loggedInUserJSON = localStorage.getItem('loggedInUser');
-            if (loggedInUserJSON) {
-                const user = JSON.parse(loggedInUserJSON);
-                showApp(user);
-            } else {
-                showLoginPage();
-            }
-        };
-
-        checkLoginState();
-    });
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
